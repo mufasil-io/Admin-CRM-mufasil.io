@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import {
   Shield, LogOut, Clock, CheckCircle2, XCircle, Users,
-  FileCheck, AlertCircle, Eye, X, ChevronDown,
+  FileCheck, AlertCircle, Eye, X,
   Sparkles, CreditCard, MessageSquare
 } from 'lucide-react'
 
@@ -308,6 +308,7 @@ export default function DashboardClient({ requests, profileMap, stats }: Dashboa
               <X size={18} />
             </button>
             <div className="p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={viewingProof}
                 alt="Payment Proof"
