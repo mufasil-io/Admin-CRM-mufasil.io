@@ -2,11 +2,13 @@ import { NextResponse } from 'next/server';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-);
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
 
 // GET: Fetch all upgrade chats with messages (admin only)
 export async function GET() {
@@ -18,7 +20,7 @@ export async function GET() {
     }
 
     // Fetch all chats
-    const { data: chats, error: chatsErr } = await supabaseAdmin
+    const { data: chats, error: chatsErr } = await getSupabaseAdmin()
       .from('upgrade_chats')
       .select('*')
       .order('updated_at', { ascending: false });
@@ -29,7 +31,7 @@ export async function GET() {
 
     // Fetch profiles for all chat users
     const userIds = [...new Set((chats || []).map(c => c.user_id))];
-    const { data: profiles } = await supabaseAdmin
+    const { data: profiles } = await getSupabaseAdmin()
       .from('profiles')
       .select('id, full_name, email, phone, plan_tier, business_name')
       .in('id', userIds.length > 0 ? userIds : ['none']);
@@ -40,7 +42,7 @@ export async function GET() {
 
     // Fetch latest message for each chat (for preview)
     const chatIds = (chats || []).map(c => c.id);
-    const { data: latestMessages } = await supabaseAdmin
+    const { data: latestMessages } = await getSupabaseAdmin()
       .from('upgrade_messages')
       .select('*')
       .in('chat_id', chatIds.length > 0 ? chatIds : ['none'])
@@ -72,7 +74,7 @@ export async function POST(req: Request) {
     const { action, chat_id, text_content, new_plan } = body;
 
     if (action === 'send_message') {
-      const { error } = await supabaseAdmin.from('upgrade_messages').insert({
+      const { error } = await getSupabaseAdmin().from('upgrade_messages').insert({
         chat_id,
         sender_type: 'admin',
         text_content: text_content || null,
@@ -82,7 +84,7 @@ export async function POST(req: Request) {
     }
 
     if (action === 'get_messages') {
-      const { data: messages } = await supabaseAdmin
+      const { data: messages } = await getSupabaseAdmin()
         .from('upgrade_messages')
         .select('*')
         .eq('chat_id', chat_id)
@@ -92,7 +94,7 @@ export async function POST(req: Request) {
 
     if (action === 'approve') {
       // Get chat to find user_id
-      const { data: chat } = await supabaseAdmin
+      const { data: chat } = await getSupabaseAdmin()
         .from('upgrade_chats')
         .select('user_id')
         .eq('id', chat_id)
@@ -101,7 +103,7 @@ export async function POST(req: Request) {
       if (!chat) return NextResponse.json({ error: 'Chat not found' }, { status: 404 });
 
       // Update user's plan_tier
-      const { error: planError } = await supabaseAdmin
+      const { error: planError } = await getSupabaseAdmin()
         .from('profiles')
         .update({ plan_tier: new_plan || 'pro' })
         .eq('id', chat.user_id);
@@ -109,13 +111,13 @@ export async function POST(req: Request) {
       if (planError) return NextResponse.json({ error: 'Failed to upgrade plan' }, { status: 500 });
 
       // Update chat status
-      await supabaseAdmin
+      await getSupabaseAdmin()
         .from('upgrade_chats')
         .update({ status: 'approved' })
         .eq('id', chat_id);
 
       // Send approval message
-      await supabaseAdmin.from('upgrade_messages').insert({
+      await getSupabaseAdmin().from('upgrade_messages').insert({
         chat_id,
         sender_type: 'admin',
         text_content: `✅ Your plan has been upgraded to ${(new_plan || 'pro').charAt(0).toUpperCase() + (new_plan || 'pro').slice(1)}! 🎉\n\nYour new features are now active. Refresh your dashboard to see the changes.\n\nThank you for choosing Mufasil.io!`,
@@ -125,12 +127,12 @@ export async function POST(req: Request) {
     }
 
     if (action === 'reject') {
-      await supabaseAdmin
+      await getSupabaseAdmin()
         .from('upgrade_chats')
         .update({ status: 'rejected' })
         .eq('id', chat_id);
 
-      await supabaseAdmin.from('upgrade_messages').insert({
+      await getSupabaseAdmin().from('upgrade_messages').insert({
         chat_id,
         sender_type: 'admin',
         text_content: text_content || '❌ Your upgrade request could not be processed. Please ensure your payment is correct and try again, or contact support for help.',
