@@ -126,13 +126,22 @@ export default function DashboardClient({ requests, profileMap, stats }: Dashboa
               <p className="text-xs text-[#86868b] font-medium">mufasil.io CRM</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-[#86868b] hover:text-[#1d1d1f] hover:bg-black/5 transition-all cursor-pointer"
-          >
-            <LogOut size={16} />
-            Sign Out
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push('/dashboard/inbox')}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-[#128c7e] to-[#075e54] text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
+            >
+              <MessageSquare size={16} />
+              Upgrade Inbox
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-[#86868b] hover:text-[#1d1d1f] hover:bg-black/5 transition-all cursor-pointer"
+            >
+              <LogOut size={16} />
+              Sign Out
+            </button>
+          </div>
         </div>
       </header>
 
