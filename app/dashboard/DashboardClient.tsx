@@ -128,6 +128,13 @@ export default function DashboardClient({ requests, profileMap, stats }: Dashboa
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => router.push('/dashboard/users')}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-[#0071e3] to-[#5856d6] text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
+            >
+              <Users size={16} />
+              Users Directory
+            </button>
+            <button
               onClick={() => router.push('/dashboard/inbox')}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-[#128c7e] to-[#075e54] text-white shadow-md hover:shadow-lg transition-all cursor-pointer"
             >
